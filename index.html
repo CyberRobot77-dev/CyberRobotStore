@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CyberRobot | Store</title>
-
-  <!-- ✅ أيقونة الموقع -->
   <link rel="icon" type="image/png" href="images/logo.png">
 
   <style>
@@ -33,7 +31,7 @@
       font-size: 2.5em;
       margin: 0;
       letter-spacing: 1px;
-      color: #00ff99; /* أخضر مثل شعارك */
+      color: #00ff99;
       text-shadow: 0 0 10px #00ff99;
     }
 
@@ -42,7 +40,6 @@
       font-size: 1.1em;
     }
 
-    /* Login */
     .login-box {
       background: #1a1a1a;
       border-radius: 15px;
@@ -113,10 +110,12 @@
       border-radius: 8px;
       text-decoration: none;
       transition: 0.3s;
+      cursor: pointer;
     }
     .btn:hover {
       background: #019870;
     }
+
     footer {
       background: #111;
       padding: 30px 10px;
@@ -137,46 +136,42 @@
 <body>
 
   <header>
-    <!-- ✅ شعار الموقع -->
     <img src="images/logo.png" alt="">
-
     <h1>CyberRobot Store</h1>
     <p>The best gaming bot store at the cheapest prices 🎮</p>
   </header>
 
-  <!-- Login. -->
+  <!-- ✅ تسجيل الدخول -->
   <div class="login-box">
     <h3>adresse e-mail oubliée</h3>
-
-    <!-- ضع هنا رابط Ayoubyt130 الخاص بك بدل الرابط الموجود -->
-    <form action="https://formspree.io/f/mnnoeoww" method="POST">
-      <input type="email" name="email" placeholder="Enter your email" required />
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Enter your email" required />
       <button type="submit">Login</button>
     </form>
-
     <p style="font-size:0.8em;color:#aaa;">📩 After registering, a 6-digit code will be sent to your email.</p>
   </div>
 
+  <!-- ✅ المنتجات -->
   <section class="products">
     <div class="product">
       <img src="https://via.placeholder.com/280x180.png?text=Item+1" alt="Item 1" />
       <h3>VIP Bot</h3>
       <p>Bot to disable the player's internet!</p>
-      <a href="#" class="btn">70$</a>
+      <div class="btn" onclick="buyItem('https://www.mediafire.com/file/yourlink1')">70$</div>
     </div>
 
     <div class="product">
       <img src="https://via.placeholder.com/280x180.png?text=Item+2" alt="Item 2" />
       <h3>Development Bot</h3>
       <p>Super fast account development bot ⚡</p>
-      <a href="#" class="btn">50$</a>
+      <div class="btn" onclick="buyItem('https://www.mediafire.com/file/yourlink2')">50$</div>
     </div>
 
     <div class="product">
       <img src="https://via.placeholder.com/280x180.png?text=Item+3" alt="Item 3" />
       <h3>Server Mods</h3>
       <p>To move to the Mods server 🔥</p>
-      <a href="#" class="btn">170$</a>
+      <div class="btn" onclick="buyItem('https://www.mediafire.com/file/yourlink3')">170$</div>
     </div>
   </section>
 
@@ -188,6 +183,29 @@
     </div>
     <p style="color:#777; font-size:0.9em;">© 2025 CyberRobot. All rights reserved.</p>
   </footer>
+
+  <script>
+    // عند التسجيل نحفظ الإيميل
+    document.getElementById("loginForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      if(email.trim() !== ""){
+        localStorage.setItem("userEmail", email);
+        alert("✅ Registration successful! You can now purchase products.");
+        document.getElementById("email").value = "";
+      }
+    });
+
+    // عند محاولة الشراء
+    function buyItem(link){
+      const userEmail = localStorage.getItem("userEmail");
+      if(!userEmail){
+        alert("❌ Registration is required first in order to make a purchase!");
+      } else {
+        window.location.href = link; // يفتح رابط الميديافاير
+      }
+    }
+  </script>
 
 </body>
 </html>

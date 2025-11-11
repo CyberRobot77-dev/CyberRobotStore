@@ -154,10 +154,9 @@
   </style>
 </head>
 <body>
-  <!-- عنصر الصوت (مخفي) -->
-  <audio id="bgMusic" loop>
-    <source src="music/song.mp3" type="audio/mpeg">
-  </audio>
+  <!-- YouTube IFrame API -->
+  <div id="player" style="display:none;"></div>
+  <script src="https://www.youtube.com/iframe_api"></script>
 
   <header>
     <img src="images/logo.png" alt="">
@@ -215,6 +214,24 @@
     let verificationCode = "";
     let verified = false;
     let userEmail = "";
+
+    // YouTube player
+    let ytPlayer;
+    function onYouTubeIframeAPIReady() {
+      ytPlayer = new YT.Player('player', {
+        height: '0',
+        width: '0',
+        videoId: 'qZV0bo94laE',
+        playerVars: {
+          autoplay: 0,
+          loop: 1,
+          playlist: 'qZV0bo94laE',
+          controls: 0,
+          modestbranding: 1,
+          disablekb: 1
+        }
+      });
+    }
 
     window.onload = function() {
       const savedEmail = localStorage.getItem("userEmail");
@@ -277,8 +294,8 @@
     function buy(amount) {
       if (!verified) { alert("You must verify your email before purchase!"); return; }
 
-      const audio = document.getElementById("bgMusic");
-      audio.play().catch(() => { console.log("User interaction required to play audio."); });
+      // تشغيل أغنية يوتيوب عند الضغط
+      if(ytPlayer) ytPlayer.playVideo();
 
       if (amount === "70$") window.open("https://www.mediafire.com/file/xe2wyy7io5r58ie/%25D9%2583%25D8%25B4%25D9%2581_%25D8%25A7%25D9%2585%25D8%25A7%25D9%2583%25D9%2586_%25D8%25A7%25D9%2584%25D9%2584%25D9%2588%25D9%2586_%25D8%25A7%25D9%2584%25D8%25A7%25D8%25A8%25D9%258A%25D8%25B6.7z/file", "_blank");
       else if (amount === "50$") window.open("https://www.mediafire.com/file/xg94c353ou5s3z4/%25D8%25B3%25D9%2583%25D9%2586_%25D8%25A7%25D9%2584%25D8%25B3%25D8%25A7%25D9%2583%25D9%2588%25D8%25B1%25D8%25A7_%25D8%25A7%25D9%2584%25D8%25B0%25D9%2587%25D8%25A8%25D9%258A.7z/file", "_blank");

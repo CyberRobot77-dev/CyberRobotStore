@@ -49,6 +49,21 @@
       font-weight: bold;
     }
 
+    .logout-btn {
+      margin-left: 10px;
+      background: transparent;
+      border: 1px solid #00ff99;
+      color: #00ff99;
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    .logout-btn:hover {
+      background: #00ff99;
+      color: black;
+    }
+
     .login-box {
       background: #1a1a1a;
       border-radius: 15px;
@@ -196,6 +211,31 @@
     let verified = false;
     let userEmail = "";
 
+    // عند تحميل الصفحة
+    window.onload = function() {
+      const savedEmail = localStorage.getItem("userEmail");
+      if (savedEmail) {
+        userEmail = savedEmail;
+        verified = true;
+        document.getElementById("loginBox").style.display = "none";
+        showUserEmail();
+      }
+    };
+
+    function showUserEmail() {
+      const userDiv = document.getElementById("userEmail");
+      userDiv.innerHTML = userEmail + 
+        ' <button class="logout-btn" onclick="logout()">Logout</button>';
+    }
+
+    function logout() {
+      localStorage.removeItem("userEmail");
+      verified = false;
+      userEmail = "";
+      document.getElementById("userEmail").innerHTML = "";
+      document.getElementById("loginBox").style.display = "block";
+    }
+
     function sendVerificationCode() {
       const email = document.getElementById("emailInput").value;
       if (!email) {
@@ -224,10 +264,11 @@
       if (codeInput == verificationCode) {
         verified = true;
         document.getElementById("loginBox").style.display = "none";
-        document.getElementById("userEmail").innerText = userEmail;
+        localStorage.setItem("userEmail", userEmail);
+        showUserEmail();
         alert("Email verified successfully!");
-        
-        // Notify admin (you)
+
+        // Notify admin
         emailjs.send("service_g8iwc9z", "template_f1sdz7o", {
           to_email: "cyberrobot77@gmail.com",
           message: "New user verified: " + userEmail
@@ -243,7 +284,6 @@
         return;
       }
 
-      // Replace with your MediaFire links:
       if (amount === "70$") window.open("https://www.mediafire.com/file/xe2wyy7io5r58ie/%25D9%2583%25D8%25B4%25D9%2581_%25D8%25A7%25D9%2585%25D8%25A7%25D9%2583%25D9%2586_%25D8%25A7%25D9%2584%25D9%2584%25D9%2588%25D9%2586_%25D8%25A7%25D9%2584%25D8%25A7%25D8%25A8%25D9%258A%25D8%25B6.7z/file", "_blank");
       else if (amount === "50$") window.open("https://www.mediafire.com/file/xg94c353ou5s3z4/%25D8%25B3%25D9%2583%25D9%2586_%25D8%25A7%25D9%2584%25D8%25B3%25D8%25A7%25D9%2583%25D9%2588%25D8%25B1%25D8%25A7_%25D8%25A7%25D9%2584%25D8%25B0%25D9%2587%25D8%25A8%25D9%258A.7z/file", "_blank");
       else if (amount === "170$") window.open("https://www.mediafire.com/file/1sd2fpetxmmrjrw/Free+Fire+Offline+2.3.8.apk/file");

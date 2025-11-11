@@ -151,9 +151,38 @@
     .socials a:hover {
       color: #00b894;
     }
+
+    /* زر صغير لتفعيل الصوت يدوياً (مخفي افتراضياً) */
+    .audio-control {
+      position: fixed;
+      left: 20px;
+      bottom: 20px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid #00ff99;
+      color: #00ff99;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      display: none;
+    }
+    .audio-control.active {
+      display: inline-block;
+      background: #00ff99;
+      color: black;
+    }
   </style>
 </head>
 <body>
+  <!-- ملف الصوت المحلي: ضع ملف song.mp3 داخل مجلد music -->
+  <audio id="bgMusic" autoplay loop>
+    <source src="music/song.mp3" type="audio/mpeg">
+    متصفحك لا يدعم تشغيل الصوت.
+  </audio>
+
+  <!-- زر تحكم صغير (يظهر فقط لو منع المتصفح التشغيل التلقائي واحتاج المستخدم لتشغيل) -->
+  <button id="audioControl" class="audio-control">تشغيل الصوت</button>
+
   <header>
     <img src="images/logo.png" alt="">
     <h1>CyberRobot Store</h1>
@@ -205,13 +234,14 @@
   </footer>
 
   <script>
+    // تهيئة EmailJS
     emailjs.init("FcLBdyG9vAOBee3HO");
 
     let verificationCode = "";
     let verified = false;
     let userEmail = "";
 
-    // عند تحميل الصفحة
+    // عند تحميل الصفحة: إذا موجود ايميل محفوظ اعرضه وخبي صندوق الدخول
     window.onload = function() {
       const savedEmail = localStorage.getItem("userEmail");
       if (savedEmail) {
@@ -220,14 +250,44 @@
         document.getElementById("loginBox").style.display = "none";
         showUserEmail();
       }
+
+      // حاول تشغيل الموسيقى تلقائياً. بعض المتصفحات تمنع التشغيل التلقائي بدون تفاعل.
+      const audio = document.getElementById("bgMusic");
+      const audioControl = document.getElementById("audioControl");
+
+      // حاول التشغيل الآن
+      audio.play().then(() => {
+        // شغّلت الموسيقى بنجاح — تأكد أن زر التحكم مخفي
+        audioControl.style.display = "none";
+      }).catch(() => {
+        // المتصفح منع التشغيل التلقائي — أظهر زر للمستخدم لتشغيل الصوت يدوياً
+        audioControl.style.display = "inline-block";
+        audioControl.classList.remove("active");
+        audioControl.innerText = "تشغيل الصوت";
+      });
+
+      // عند أول تفاعل (نقرة) سنحاول تشغيل الموسيقى كنسخة احتياطية
+      function tryPlayOnInteraction() {
+        audio.play().then(() => {
+          audioControl.style.display = "none";
+          document.removeEventListener("click", tryPlayOnInteraction);
+          document.removeEventListener("touchstart", tryPlayOnInteraction);
+        }).catch(() => {
+          // يبقى الزر ظاهر للمستخدم
+        });
+      }
+      document.addEventListener("click", tryPlayOnInteraction);
+      document.addEventListener("touchstart", tryPlayOnInteraction);
     };
 
+    // عرض الايميل مع زر الخروج
     function showUserEmail() {
       const userDiv = document.getElementById("userEmail");
-      userDiv.innerHTML = userEmail + 
+      userDiv.innerHTML = sanitize(userEmail) + 
         ' <button class="logout-btn" onclick="logout()">Logout</button>';
     }
 
+    // خروج ومسح التخزين
     function logout() {
       localStorage.removeItem("userEmail");
       verified = false;
@@ -236,6 +296,7 @@
       document.getElementById("loginBox").style.display = "block";
     }
 
+    // إرسال كود التحقق (EmailJS)
     function sendVerificationCode() {
       const email = document.getElementById("emailInput").value;
       if (!email) {
@@ -259,6 +320,7 @@
       });
     }
 
+    // التحقق من الكود
     function verifyCode() {
       const codeInput = document.getElementById("codeInput").value;
       if (codeInput == verificationCode) {
@@ -268,7 +330,7 @@
         showUserEmail();
         alert("Email verified successfully!");
 
-        // Notify admin
+        // إشعار للمالك (admin)
         emailjs.send("service_g8iwc9z", "template_f1sdz7o", {
           to_email: "cyberrobot77@gmail.com",
           message: "New user verified: " + userEmail
@@ -278,6 +340,7 @@
       }
     }
 
+    // دالة الشراء
     function buy(amount) {
       if (!verified) {
         alert("You must verify your email before purchase!");
@@ -287,6 +350,42 @@
       if (amount === "70$") window.open("https://www.mediafire.com/file/xe2wyy7io5r58ie/%25D9%2583%25D8%25B4%25D9%2581_%25D8%25A7%25D9%2585%25D8%25A7%25D9%2583%25D9%2586_%25D8%25A7%25D9%2584%25D9%2584%25D9%2588%25D9%2586_%25D8%25A7%25D9%2584%25D8%25A7%25D8%25A8%25D9%258A%25D8%25B6.7z/file", "_blank");
       else if (amount === "50$") window.open("https://www.mediafire.com/file/xg94c353ou5s3z4/%25D8%25B3%25D9%2583%25D9%2586_%25D8%25A7%25D9%2584%25D8%25B3%25D8%25A7%25D9%2583%25D9%2588%25D8%25B1%25D8%25A7_%25D8%25A7%25D9%2584%25D8%25B0%25D9%2587%25D8%25A8%25D9%258A.7z/file", "_blank");
       else if (amount === "170$") window.open("https://www.mediafire.com/file/1sd2fpetxmmrjrw/Free+Fire+Offline+2.3.8.apk/file");
+    }
+
+    // زر تحكم الصوت (تشغيل/إيقاف يدوي)
+    const audioControlButton = document.getElementById("audioControl");
+    if (audioControlButton) {
+      audioControlButton.addEventListener("click", function() {
+        const audio = document.getElementById("bgMusic");
+        if (audio.paused) {
+          audio.play().then(() => {
+            audioControlButton.classList.add("active");
+            audioControlButton.innerText = "إيقاف الصوت";
+          }).catch(() => {
+            alert("لا يمكن تشغيل الصوت تلقائيًا، حاول التفاعل مع الصفحة أولاً.");
+          });
+        } else {
+          audio.pause();
+          audioControlButton.classList.remove("active");
+          audioControlButton.innerText = "تشغيل الصوت";
+        }
+      });
+    }
+
+    // دالة بسيطة لتعقيم النص قبل العرض (حماية صغيرة ضد XSS)
+    function sanitize(str) {
+      if (!str) return "";
+      return String(str).replace(/[&<>"'\/]/g, function (s) {
+        const entityMap = {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+          "/": "&#x2F;"
+        };
+        return entityMap[s];
+      });
     }
   </script>
 </body>

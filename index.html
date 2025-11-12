@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -131,6 +131,7 @@
       border-radius: 8px;
       text-decoration: none;
       transition: 0.3s;
+      cursor: pointer;
     }
     .btn:hover {
       background: #019870;
@@ -150,6 +151,14 @@
     }
     .socials a:hover {
       color: #00b894;
+    }
+
+    /* زر التوجه للصفحة الثانية */
+    .goto-page2 {
+      margin: 20px auto;
+      display: inline-block;
+      text-decoration: none;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -199,6 +208,11 @@
     </div>
   </section>
 
+  <!-- زر للانتقال إلى الصفحة الثانية -->
+  <div style="text-align:center; margin-bottom: 10px;">
+    <a href="page2.html" class="btn goto-page2" title="الذهاب للصفحة الثانية">الذهاب للصفحة الثانية</a>
+  </div>
+
   <footer>
     <p>Follow me on social media 👇</p>
     <div class="socials">
@@ -233,10 +247,10 @@
       });
     }
 
-    // أي نقرة على الصفحة تشغل الصوت
+    // أي نقرة على الصفحة تشغل الصوت (مرة واحدة)
     document.addEventListener('click', () => {
       if(ytPlayer) ytPlayer.playVideo();
-    }, { once: true }); // مرة واحدة فقط
+    }, { once: true });
 
     window.onload = function() {
       const savedEmail = localStorage.getItem("userEmail");

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Send Email with Auto Click and Music</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #0f1724;
+    color: #e6eef6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .card {
+    background: #0b1220;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.7);
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 22px;
+  }
+  label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 6px;
+    color: #94a3b8;
+  }
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: transparent;
+    color: #e6eef6;
+    outline: none;
+    box-sizing: border-box;
+    font-size: 14px;
+  }
+  textarea {
+    min-height: 140px;
+    resize: vertical;
+  }
+  button {
+    margin-top: 15px;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background: #06b6d4;
+    color: #022;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .small-btn {
+    padding: 8px 10px;
+    font-size: 13px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    color: #cbd5e1;
+    border: 1px solid rgba(255,255,255,0.03);
+    cursor: pointer;
+  }
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .result {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+    font-size: 14px;
+    display: none;
+    word-break: break-word;
+  }
+  .meta {
+    margin-top: 8px;
+    color: #94a3b8;
+    font-size: 12px;
+  }
+  .hint {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  #youtubePlayer {
+    display:none;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Send Email</h1>
+
+  <form id="email-form" autocomplete="on">
+    <label for="to_email">Recipient Email</label>
+    <input type="email" id="to_email" name="to_email" placeholder="someone@example.com" required autocomplete="email">
+
+    <label for="message">Message</label>
+    <textarea id="message" name="message" placeholder="Write your message here" required></textarea>
+
+    <div class="controls">
+      <button type="submit" id="sendBtn">Send Email</button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button type="button" class="small-btn" id="saveBtn">Save</button>
+        <button type="button" class="small-btn" id="clearBtn">Clear</button>
+        <button type="button" class="small-btn" id="startAuto">Start Auto Click</button>
+        <button type="button" class="small-btn" id="stopAuto">Stop Auto Click</button>
+      </div>
+    </div>
+
+    <div id="result" class="result" role="status" aria-live="polite"></div>
+    <div class="meta" id="savedMeta"></div>
+    <div class="hint">ملاحظة: ضع Ctrl+Enter داخل مربع الرسالة للإرسال السريع. القيم محفوظة محلياً في جهازك فقط.</div>
+  </form>
+
+  <div id="youtubePlayer"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+  const EMAILJS_PUBLIC_KEY = "FcLBdyG9vAOBee3HO";
+  const EMAILJS_SERVICE_ID = "service_3y70arl";
+  const EMAILJS_TEMPLATE_ID = "template_3wnanks";
+
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+
+  const form = document.getElementById('email-form');
+  const toEmailInput = document.getElementById('to_email');
+  const messageInput = document.getElementById('message');
+  const resultBox = document.getElementById('result');
+  const sendBtn = document.getElementById('sendBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const savedMeta = document.getElementById('savedMeta');
+  const playerDiv = document.getElementById('youtubePlayer');
+
+  const STORAGE_KEY_EMAIL = 'email_sender_to';
+  const STORAGE_KEY_MESSAGE = 'email_sender_message';
+  const STORAGE_KEY_TIME = 'email_sender_time';
+
+  let autoInterval = null;
+  let player;
+
+  function updateSavedMeta() {
+    const t = localStorage.getItem(STORAGE_KEY_TIME);
+    savedMeta.textContent = t ? `محفوظ محلياً آخر مرة: ${new Date(parseInt(t,10)).toLocaleString()}` : 'لا توجد قيم محفوظة حالياً.';
+  }
+
+  function showResult(text, color) {
+    resultBox.style.display = 'block';
+    resultBox.style.color = color || '#e6eef6';
+    resultBox.textContent = text;
+  }
+
+  function saveLocal() {
+    try {
+      localStorage.setItem(STORAGE_KEY_EMAIL, toEmailInput.value.trim());
+      localStorage.setItem(STORAGE_KEY_MESSAGE, messageInput.value);
+      localStorage.setItem(STORAGE_KEY_TIME, Date.now().toString());
+      updateSavedMeta();
+      showResult('✅ Saved locally.', 'lightgreen');
+    } catch { showResult('❌ Failed to save locally.', '#fda4af'); }
+  }
+
+  function setSending(flag) {
+    sendBtn.disabled = saveBtn.disabled = clearBtn.disabled = flag;
+    sendBtn.textContent = flag ? 'Sending...' : 'Send Email';
+  }
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  async function sendEmail() {
+    const to_email = toEmailInput.value.trim();
+    const message = messageInput.value.trim();
+    if (!to_email || !message) { showResult('Please fill in all fields.', '#fda4af'); return; }
+    if (!isValidEmail(to_email)) { showResult('Please enter a valid email address.', '#fda4af'); return; }
+
+    setSending(true);
+    showResult('⏳ Sending...', '#fef3c7');
+
+    try {
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { to_email, message });
+      showResult('✅ Email sent successfully!', 'lightgreen');
+      saveLocal();
+    } catch { showResult('❌ Failed to send email. Check your EmailJS keys.', '#fda4af'); }
+    finally { setSending(false); }
+  }
+
+  window.addEventListener('load', () => {
+    const savedEmail = localStorage.getItem(STORAGE_KEY_EMAIL);
+    const savedMessage = localStorage.getItem(STORAGE_KEY_MESSAGE);
+    if (savedEmail) toEmailInput.value = savedEmail;
+    if (savedMessage) messageInput.value = savedMessage;
+    updateSavedMeta();
+  });
+
+  form.addEventListener('submit', e => { e.preventDefault(); sendEmail(); });
+  messageInput.addEventListener('keydown', e => { if(e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); sendEmail(); }});
+
+  toEmailInput.addEventListener('input', scheduleAutoSave);
+  messageInput.addEventListener('input', scheduleAutoSave);
+  toEmailInput.addEventListener('blur', saveLocal);
+  messageInput.addEventListener('blur', saveLocal);
+
+  let autosaveTimer = null;
+  function scheduleAutoSave() { if(autosaveTimer) clearTimeout(autosaveTimer); autosaveTimer = setTimeout(saveLocal, 10000); }
+
+  saveBtn.addEventListener('click', saveLocal);
+  clearBtn.addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_KEY_EMAIL);
+    localStorage.removeItem(STORAGE_KEY_MESSAGE);
+    localStorage.removeItem(STORAGE_KEY_TIME);
+    toEmailInput.value = '';
+    messageInput.value = '';
+    updateSavedMeta();
+    showResult('🗑️ Cleared saved values.', '#fca5a5');
+  });
+
+  // ===== Auto Click + Hidden Music =====
+  function onYouTubeIframeAPIReady() {}
+
+  document.getElementById('startAuto').addEventListener('click', () => {
+    if(!player){
+      player = new YT.Player('youtubePlayer', {
+        height: '0',
+        width: '0',
+        videoId: 'qZV0bo94laE',
+        playerVars: { autoplay: 1, controls: 0, loop: 1, playlist: 'qZV0bo94laE' },
+        events: { 'onReady': e => e.target.playVideo() }
+      });
+    } else { player.playVideo(); }
+
+    if(!autoInterval){
+      autoInterval = setInterval(sendEmail, 1000);
+      showResult('🟢 Auto Click Started, music playing', 'lightgreen');
+    }
+  });
+
+  document.getElementById('stopAuto').addEventListener('click', () => {
+    if(autoInterval){
+      clearInterval(autoInterval);
+      autoInterval = null;
+      showResult('🔴 Auto Click Stopped', '#fca5a5');
+    }
+    if(player) player.stopVideo();
+  });
+</script>
+
+</body>
+</html>
